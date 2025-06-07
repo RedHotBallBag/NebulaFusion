@@ -41,8 +41,15 @@ class HookRegistry(QObject):
             # Navigation hooks
             "onUrlChanged",
             # Download hooks
-            "onDownloadStarted",
-            "onDownloadFinished",
+            "onDownloadStart",
+            "onDownloadProgress",
+            "onDownloadComplete",
+            "onDownloadError",
+            "onDownloadCanceled",
+            "onDownloadPaused",
+            "onDownloadResumed",
+            "onDownloadsCleared",
+            "onDownloadRemoved",
             # Bookmark hooks
             "onBookmarkAdded",
             "onBookmarkRemoved",
