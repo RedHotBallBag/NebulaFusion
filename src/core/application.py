@@ -2,10 +2,8 @@
 # NebulaFusion Browser - Application
 
 import os
-import sys
 import logging
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QObject, pyqtSignal, QUrl, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 
 # Import core modules
 from src.core.web_engine import WebEngineManager
@@ -168,6 +166,15 @@ class Application(QObject):
         # Create main window
         self.logger.info("Creating main window...")
         self.main_window = MainWindow(self)
+
+        # Connect plugin UI components now that the main window exists
+        for plugin in self.plugin_loader.loaded_plugins.values():
+            try:
+                plugin["api"].ui.connect_main_window(self.main_window)
+            except Exception as e:
+                self.logger.error(
+                    f"Error connecting plugin {plugin['id']} UI: {e}"
+                )
 
         # Show main window
         if self.main_window:
