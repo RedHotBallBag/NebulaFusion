@@ -53,6 +53,9 @@ class PluginAPI(QObject):
         # Network
         self.network = PluginNetwork(self.app_controller, self.plugin_id)
 
+        # Browser automation
+        self.browser = PluginBrowserAutomation(self.app_controller, self.plugin_id)
+
         # Filesystem
         self.filesystem = PluginFilesystem(self.app_controller, self.plugin_id)
 
@@ -329,6 +332,20 @@ class PluginDownloads:
         return self.app_controller.download_manager.clear_completed_downloads()
 
 
+class PluginBrowserAutomation:
+    """Browser automation API for plugins."""
+
+    def __init__(self, app_controller, plugin_id):
+        self.app_controller = app_controller
+        self.plugin_id = plugin_id
+
+    def get_page_title(self, url):
+        """Fetch a page title using the headless automation utility."""
+        from src.utils.browser_automation import get_page_title
+
+        return get_page_title(url)
+
+
 class PluginCookies:
     """Cookies API for plugins."""
 
@@ -540,7 +557,6 @@ class PluginUI:
                 self._on_plugin_toolbar_created(main_window.plugin_toolbar)
         except Exception as e:
             self.logger.error(f"Error connecting to main window: {e}")
-
 
     def _on_plugin_toolbar_created(self, toolbar):
         """Handle plugin toolbar creation event."""
