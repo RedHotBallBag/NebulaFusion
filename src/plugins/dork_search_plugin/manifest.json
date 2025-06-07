@@ -7,5 +7,15 @@
     "permissions": [
         "tabs",
         "ui"
+    "name": "Dork Search Panel",
+    "version": "0.1.0",
+    "author": "NebulaFusion Team",
+    "description": "Provides a panel for building search engine dorks to find files by extension.",
+    "permissions": [
+        "tabs",
+        "ui"
+    ],
+    "hooks": [
+        "onToolbarCreated"
     ]
 }
