@@ -45,6 +45,15 @@ class BrowserTab(QWebEngineView):
         self.web_page = QWebEnginePage(self.profile, self)
         self.setPage(self.web_page)
 
+        # Connect download requests from the profile to the download manager
+        try:
+            self.profile.downloadRequested.connect(self._on_download_requested)
+        except Exception as e:
+            # Log error but keep browser functioning
+            self.app_controller.logger.error(
+                f"Failed to connect downloadRequested signal: {e}"
+            )
+
         # Connect signals
         self._connect_signals()
 
@@ -57,6 +66,10 @@ class BrowserTab(QWebEngineView):
         self.loadStarted.connect(self.loading_started)
         self.loadFinished.connect(self.loading_finished)
         self.loadProgress.connect(self.loading_progress)
+
+    def _on_download_requested(self, download):
+        """Forward download requests to the application's download manager."""
+        self.app_controller.download_manager.handle_download(download)
 
     def navigate(self, url):
         """Navigate to URL."""
