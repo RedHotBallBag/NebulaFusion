@@ -23,7 +23,8 @@ class Toolbar(QToolBar):
         
         # Set properties
         self.setMovable(False)
-        self.setIconSize(QSize(16, 16))
+        # Use larger icons for better visibility
+        self.setIconSize(QSize(24, 24))
         self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         
         # Create actions
@@ -40,61 +41,61 @@ class Toolbar(QToolBar):
         """Create toolbar actions."""
         # Create back action
         self.back_action = QAction("Back", self)
-        self.back_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/back.png")))
+        self.back_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/back.svg")))
         self.back_action.setToolTip("Go back one page")
         self.back_action.triggered.connect(lambda: self.action_triggered.emit("back"))
         
         # Create forward action
         self.forward_action = QAction("Forward", self)
-        self.forward_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/forward.png")))
+        self.forward_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/forward.svg")))
         self.forward_action.setToolTip("Go forward one page")
         self.forward_action.triggered.connect(lambda: self.action_triggered.emit("forward"))
         
         # Create reload action
         self.reload_action = QAction("Reload", self)
-        self.reload_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/reload.png")))
+        self.reload_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/reload.svg")))
         self.reload_action.setToolTip("Reload current page")
         self.reload_action.triggered.connect(lambda: self.action_triggered.emit("reload"))
         
         # Create stop action
         self.stop_action = QAction("Stop", self)
-        self.stop_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/stop.png")))
+        self.stop_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/stop.svg")))
         self.stop_action.setToolTip("Stop loading page")
         self.stop_action.triggered.connect(lambda: self.action_triggered.emit("stop"))
         
         # Create home action
         self.home_action = QAction("Home", self)
-        self.home_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/home.png")))
+        self.home_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/home.svg")))
         self.home_action.setToolTip("Go to home page")
         self.home_action.triggered.connect(lambda: self.action_triggered.emit("home"))
         
         # Create bookmark action
         self.bookmark_action = QAction("Bookmark", self)
-        self.bookmark_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/bookmark.png")))
+        self.bookmark_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/bookmark.svg")))
         self.bookmark_action.setToolTip("Bookmark current page")
         self.bookmark_action.triggered.connect(lambda: self.action_triggered.emit("bookmark"))
         
         # Create history action
         self.history_action = QAction("History", self)
-        self.history_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/history.png")))
+        self.history_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/history.svg")))
         self.history_action.setToolTip("View browsing history")
         self.history_action.triggered.connect(lambda: self.action_triggered.emit("history"))
         
         # Create downloads action
         self.downloads_action = QAction("Downloads", self)
-        self.downloads_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/download.png")))
+        self.downloads_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/download.svg")))
         self.downloads_action.setToolTip("View downloads")
         self.downloads_action.triggered.connect(lambda: self.action_triggered.emit("downloads"))
         
         # Create plugins action
         self.plugins_action = QAction("Plugins", self)
-        self.plugins_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/plugins.png")))
+        self.plugins_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/plugins.svg")))
         self.plugins_action.setToolTip("Manage plugins")
         self.plugins_action.triggered.connect(lambda: self.action_triggered.emit("plugins"))
         
         # Create settings action
         self.settings_action = QAction("Settings", self)
-        self.settings_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/settings.png")))
+        self.settings_action.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "../resources/icons/settings.svg")))
         self.settings_action.setToolTip("Open settings")
         self.settings_action.triggered.connect(lambda: self.action_triggered.emit("settings"))
     
