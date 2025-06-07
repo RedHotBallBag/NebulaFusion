@@ -59,6 +59,10 @@ class Application(QObject):
         # Create logger
         self.logger = logging.getLogger("NebulaFusion")
         self.logger.setLevel(logging.INFO)
+        # Prevent log messages from being propagated to the root logger which
+        # could result in duplicate log entries when other modules configure
+        # logging as well.
+        self.logger.propagate = False
 
         # Create console handler
         console_handler = logging.StreamHandler()
