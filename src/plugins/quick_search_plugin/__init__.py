@@ -16,10 +16,26 @@ class Plugin(PluginBase):
         self.search_action = None
 
     def activate(self):
-        return True
+        """Activate the plugin and register hooks."""
+        try:
+            self.api.hooks.register_hook(
+                "onBrowserStart", self.plugin_id, self.onBrowserStart
+            )
+            return True
+        except Exception as e:
+            self.api.logger.error(f"Failed to activate Quick Search plugin: {e}")
+            return False
 
     def deactivate(self):
-        return True
+        """Deactivate the plugin and unregister hooks."""
+        try:
+            self.api.hooks.unregister_all_hooks(self.plugin_id)
+            return True
+        except Exception as e:
+            self.api.logger.error(
+                f"Failed to deactivate Quick Search plugin: {e}"
+            )
+            return False
 
     def onBrowserStart(self):
         try:

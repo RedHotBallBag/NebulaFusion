@@ -15,12 +15,32 @@ class Plugin(PluginBase):
         super().__init__(api)
 
     def activate(self):
-        """Activate the plugin."""
-        return True
+        """Activate the plugin and register hooks."""
+        try:
+            self.api.hooks.register_hook(
+                "onToolbarCreated", self.plugin_id, self.onToolbarCreated
+            )
+            # If the toolbar is already available, trigger the hook immediately
+            main_window = getattr(self.api.app_controller, "main_window", None)
+            if main_window and getattr(main_window, "toolbar", None):
+                self.onToolbarCreated()
+            return True
+        except Exception as e:
+            self.api.logger.error(
+                f"Failed to activate My Toolbar Button Plugin: {e}"
+            )
+            return False
 
     def deactivate(self):
-        """Deactivate the plugin."""
-        return True
+        """Deactivate the plugin and unregister hooks."""
+        try:
+            self.api.hooks.unregister_all_hooks(self.plugin_id)
+            return True
+        except Exception as e:
+            self.api.logger.error(
+                f"Failed to deactivate My Toolbar Button Plugin: {e}"
+            )
+            return False
 
     def onToolbarCreated(self):
         """Called when the browser's toolbar is created."""
