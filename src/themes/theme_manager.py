@@ -59,7 +59,7 @@ class ThemeManager(QObject):
 
         # Apply default theme
         default_theme = self.app_controller.settings_manager.get_setting(
-            "theme", "Default"
+            "appearance.theme", "Default"
         )
         self.apply_theme(default_theme)
 
@@ -262,7 +262,9 @@ class ThemeManager(QObject):
         self.current_theme = theme_name
 
         # Save theme setting
-        self.app_controller.settings_manager.set_setting("theme", theme_name)
+        self.app_controller.settings_manager.set_setting(
+            "appearance.theme", theme_name
+        )
 
         # Emit signal
         self.theme_changed.emit(theme_name)

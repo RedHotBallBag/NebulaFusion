@@ -40,6 +40,7 @@ class Plugin(PluginBase):
     def onBrowserStart(self):
         try:
             self.api.ui.add_toolbar_button(
+                button_id="quick_search",
                 text="Quick Search",
                 tooltip="Search the web",
                 callback=self.on_quick_search_clicked,

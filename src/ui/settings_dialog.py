@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 # NebulaFusion Browser - Settings Dialog
 
-import os
-import sys
 from PyQt6.QtWidgets import (
     QDialog,
     QTabWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QLabel,
     QLineEdit,
     QCheckBox,
     QComboBox,
@@ -17,12 +14,9 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QFormLayout,
     QSpinBox,
-    QListWidget,
-    QListWidgetItem,
     QWidget,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QIcon
+
 
 
 class SettingsDialog(QDialog):
@@ -540,7 +534,7 @@ class SettingsDialog(QDialog):
         self.open_download_check.setChecked(settings.get("open_after_download", False))
 
         # Appearance settings
-        theme = settings.get("theme", "default")
+        theme = settings.get("appearance.theme", "Default")
         for i in range(self.theme_combo.count()):
             if self.theme_combo.itemData(i) == theme:
                 self.theme_combo.setCurrentIndex(i)
@@ -704,9 +698,8 @@ class SettingsDialog(QDialog):
         # Appearance settings
         theme_index = self.theme_combo.currentIndex()
         if theme_index >= 0:
-            self.app_controller.settings_manager.set_setting(
-                "theme", self.theme_combo.itemData(theme_index)
-            )
+            theme_name = self.theme_combo.itemData(theme_index)
+            self.app_controller.theme_manager.apply_theme(theme_name)
 
         self.app_controller.settings_manager.set_setting(
             "show_bookmarks_bar", self.bookmarks_bar_check.isChecked()

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # NebulaFusion Browser - Hook Registry
 
-import os
-import sys
 from PyQt6.QtCore import QObject, pyqtSignal
 
 
@@ -79,6 +77,14 @@ class HookRegistry(QObject):
             "onDimensionalTabChange",
             "onVoiceCommand",
         ]
+
+    # ------------------------------------------------------------------
+    # Public API
+
+    @property
+    def hooks(self):
+        """Return registered hooks."""
+        return self._hooks
 
     def initialize(self):
         """Initialize the hook registry."""
