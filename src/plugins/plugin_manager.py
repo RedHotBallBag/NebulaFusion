@@ -277,6 +277,18 @@ class PluginManager(QObject):
             )
             return False
 
+    def reload_plugin(self, plugin_id):
+        """Reload a single plugin."""
+        try:
+            plugin_loader = self.app_controller.plugin_loader
+            return plugin_loader.reload_plugin(plugin_id)
+        except Exception as e:
+            self.app_controller.logger.error(
+                f"Error reloading plugin {plugin_id}: {str(e)}",
+                exc_info=True,
+            )
+            return False
+
     def reload_all_plugins(self):
         """Reload all currently loaded plugins."""
         plugin_loader = self.app_controller.plugin_loader
