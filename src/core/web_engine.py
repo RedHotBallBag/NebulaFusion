@@ -2,16 +2,20 @@
 # NebulaFusion Browser - Web Engine Manager
 
 import os
-import sys
-import logging
-from PyQt6.QtCore import QObject, pyqtSignal, QUrl
+from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWebEngineCore import (
     QWebEngineProfile,
     QWebEnginePage,
     QWebEngineSettings,
-    QWebEngineCookieStore,
 )
 from PyQt6.QtWebEngineWidgets import QWebEngineView
+
+
+class WebEngine(QWebEngineView):
+    """Simple web engine view wrapper used by tests."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
 
 class WebEngineManager(QObject):
@@ -156,7 +160,7 @@ class WebEngineManager(QObject):
 
         # Configure cookies
         cookie_store = profile.cookieStore()
-        cookie_store.setCookieFilter(lambda cookie, url: True)
+        cookie_store.setCookieFilter(lambda request: True)
 
     def _configure_private_profile(self):
         """Configure private profile."""
@@ -227,7 +231,7 @@ class WebEngineManager(QObject):
 
         # Configure cookies
         cookie_store = profile.cookieStore()
-        cookie_store.setCookieFilter(lambda cookie, url: True)
+        cookie_store.setCookieFilter(lambda request: True)
 
     def create_profile(self, name, is_private=False):
         """Create a web engine profile."""

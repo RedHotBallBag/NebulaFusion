@@ -2,12 +2,8 @@
 # NebulaFusion Browser - Cookies Manager
 
 import os
-import sys
-import json
-import sqlite3
-import time
-from PyQt6.QtCore import QObject, pyqtSignal, QUrl
-from PyQt6.QtWebEngineCore import QWebEngineCookieStore
+from PyQt6.QtCore import QObject, pyqtSignal
+
 
 class CookiesManager(QObject):
     """
@@ -90,7 +86,7 @@ class CookiesManager(QObject):
             try:
                 default_store.cookieAdded.disconnect(self._on_cookie_added)
                 default_store.cookieRemoved.disconnect(self._on_cookie_removed)
-            except:
+            except Exception:
                 pass
         
         # Disconnect private cookie store signals
@@ -99,7 +95,7 @@ class CookiesManager(QObject):
             try:
                 private_store.cookieAdded.disconnect(self._on_cookie_added)
                 private_store.cookieRemoved.disconnect(self._on_cookie_removed)
-            except:
+            except Exception:
                 pass
     
     def _on_cookie_added(self, cookie):
@@ -172,22 +168,14 @@ class CookiesManager(QObject):
             
             # Set cookie filter
             if block:
-                def filter_func(cookie, url):
-                    # Allow first-party cookies
-                    cookie_domain = cookie.domain()
-                    url_domain = url.host()
-                    
-                    # Remove leading dot from cookie domain
-                    if cookie_domain.startswith("."):
-                        cookie_domain = cookie_domain[1:]
-                    
-                    # Check if cookie domain is a subdomain of URL domain
-                    return url_domain.endswith(cookie_domain)
-                
+                def filter_func(request):
+                    """Allow only first-party cookies."""
+                    return not request.thirdParty
+
                 cookie_store.setCookieFilter(filter_func)
             else:
                 # Allow all cookies
-                cookie_store.setCookieFilter(lambda cookie, url: True)
+                cookie_store.setCookieFilter(lambda request: True)
             
             # Trigger hook
             self.app_controller.hook_registry.trigger_hook("onThirdPartyCookiesBlocked", block, profile_name)

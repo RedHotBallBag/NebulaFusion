@@ -2,11 +2,10 @@
 # NebulaFusion Browser - History Manager
 
 import os
-import sys
 import json
 import sqlite3
 import time
-from PyQt6.QtCore import QObject, pyqtSignal, QUrl
+from PyQt6.QtCore import QObject, pyqtSignal
 
 class HistoryManager(QObject):
     """
@@ -216,21 +215,25 @@ class HistoryManager(QObject):
             cursor = self.db_conn.cursor()
             
             # Get history
-            cursor.execute("""
-            SELECT url, title, visit_time, visit_count
+            cursor.execute(
+                """
+            SELECT id, url, title, visit_time, visit_count
             FROM history
             ORDER BY visit_time DESC
             LIMIT ? OFFSET ?
-            """, (limit, offset))
+            """,
+                (limit, offset),
+            )
             
             # Convert to list of dictionaries
             history = []
             for row in cursor.fetchall():
-                url, title, visit_time, visit_count = row
+                entry_id, url, title, visit_time, visit_count = row
                 history.append({
+                    "id": entry_id,
                     "url": url,
                     "title": title,
-                    "visit_time": visit_time,
+                    "timestamp": visit_time,
                     "visit_count": visit_count
                 })
             
@@ -247,22 +250,26 @@ class HistoryManager(QObject):
             cursor = self.db_conn.cursor()
             
             # Search history
-            cursor.execute("""
-            SELECT url, title, visit_time, visit_count
+            cursor.execute(
+                """
+            SELECT id, url, title, visit_time, visit_count
             FROM history
             WHERE url LIKE ? OR title LIKE ?
             ORDER BY visit_time DESC
             LIMIT ? OFFSET ?
-            """, (f"%{query}%", f"%{query}%", limit, offset))
+            """,
+                (f"%{query}%", f"%{query}%", limit, offset),
+            )
             
             # Convert to list of dictionaries
             history = []
             for row in cursor.fetchall():
-                url, title, visit_time, visit_count = row
+                entry_id, url, title, visit_time, visit_count = row
                 history.append({
+                    "id": entry_id,
                     "url": url,
                     "title": title,
-                    "visit_time": visit_time,
+                    "timestamp": visit_time,
                     "visit_count": visit_count
                 })
             
@@ -279,21 +286,25 @@ class HistoryManager(QObject):
             cursor = self.db_conn.cursor()
             
             # Get most visited sites
-            cursor.execute("""
-            SELECT url, title, visit_time, visit_count
+            cursor.execute(
+                """
+            SELECT id, url, title, visit_time, visit_count
             FROM history
             ORDER BY visit_count DESC
             LIMIT ?
-            """, (limit,))
+            """,
+                (limit,),
+            )
             
             # Convert to list of dictionaries
             history = []
             for row in cursor.fetchall():
-                url, title, visit_time, visit_count = row
+                entry_id, url, title, visit_time, visit_count = row
                 history.append({
+                    "id": entry_id,
                     "url": url,
                     "title": title,
-                    "visit_time": visit_time,
+                    "timestamp": visit_time,
                     "visit_count": visit_count
                 })
             
@@ -310,21 +321,25 @@ class HistoryManager(QObject):
             cursor = self.db_conn.cursor()
             
             # Get recent sites
-            cursor.execute("""
-            SELECT url, title, visit_time, visit_count
+            cursor.execute(
+                """
+            SELECT id, url, title, visit_time, visit_count
             FROM history
             ORDER BY visit_time DESC
             LIMIT ?
-            """, (limit,))
+            """,
+                (limit,),
+            )
             
             # Convert to list of dictionaries
             history = []
             for row in cursor.fetchall():
-                url, title, visit_time, visit_count = row
+                entry_id, url, title, visit_time, visit_count = row
                 history.append({
+                    "id": entry_id,
                     "url": url,
                     "title": title,
-                    "visit_time": visit_time,
+                    "timestamp": visit_time,
                     "visit_count": visit_count
                 })
             
@@ -361,8 +376,8 @@ class HistoryManager(QObject):
                         writer.writerow([
                             entry["url"],
                             entry["title"],
-                            entry["visit_time"],
-                            entry["visit_count"]
+                            entry["timestamp"],
+                            entry["visit_count"],
                         ])
             
             else:
