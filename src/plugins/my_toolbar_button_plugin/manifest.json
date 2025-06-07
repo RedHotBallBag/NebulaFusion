@@ -1,0 +1,15 @@
+{
+    "id": "my_toolbar_button_plugin",
+    "name": "My Toolbar Button Plugin",
+    "version": "1.0.0",
+    "author": "Roo",
+    "description": "Adds a button to the toolbar that displays a message when clicked.",
+    "permissions": [
+        "tabs",
+        "bookmarks",
+        "history"
+    ],
+    "hooks": [
+        "onToolbarCreated"
+    ]
+}

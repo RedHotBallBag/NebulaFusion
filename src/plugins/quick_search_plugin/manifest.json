@@ -1,0 +1,13 @@
+{
+    "id": "quick_search_plugin",
+    "name": "Quick Search Plugin",
+    "version": "1.0.0",
+    "author": "NebulaFusion Team",
+    "description": "Adds a toolbar button for quick web search.",
+    "permissions": [
+        "tabs"
+    ],
+    "hooks": [
+        "onBrowserStart"
+    ]
+}
