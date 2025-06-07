@@ -344,7 +344,9 @@ class TabManager(QObject):
                 for tab in self.tabs:
                     tab.page().settings().setAttribute(attr, value)
 
+
             # Update developer tools setting for all tabs
             for tab in self.tabs:
                 tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.DeveloperExtrasEnabled, value)
+
 
