@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QMessageBox,
 )
+
 from PyQt6.QtCore import QUrl, pyqtSignal
 
 # Import your dialogs
