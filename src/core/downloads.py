@@ -16,8 +16,8 @@ class DownloadManager(QObject):
     """
     
     # Signals
-    download_started = pyqtSignal(str, str)  # download_id, url
-    download_finished = pyqtSignal(str, str)  # download_id, path
+    download_started = pyqtSignal(str, str, str)  # download_id, url, path
+    download_finished = pyqtSignal(str, bool)  # download_id, success
     download_failed = pyqtSignal(str, str)  # download_id, error
     download_progress = pyqtSignal(str, int, int)  # download_id, received, total
     download_canceled = pyqtSignal(str)  # download_id
@@ -114,7 +114,7 @@ class DownloadManager(QObject):
             suggested_filename = download.suggestedFileName()
             
             # Get download directory
-            download_dir = self.app_controller.settings_manager.get_setting("general.download_directory")
+            download_dir = self.app_controller.settings_manager.get_setting("download_directory")
             if not download_dir:
                 download_dir = os.path.expanduser("~/Downloads")
             
@@ -165,17 +165,125 @@ class DownloadManager(QObject):
             )
             
             # Emit signal
-            self.download_started.emit(download_id, url)
+            self.download_started.emit(download_id, url, download_path)
             
             # Trigger hook
             self.app_controller.hook_registry.trigger_hook("onDownloadStart", download_id, url, download_path)
             
             self.app_controller.logger.info(f"Download started: {url} to {download_path}")
-            
+
             return download_id
-        
+
         except Exception as e:
             self.app_controller.logger.error(f"Error handling download: {e}")
+            return None
+
+    def download_url(self, url, path=None):
+        """Download a file from a URL using a background thread."""
+        import threading
+        import requests
+
+        try:
+            download_id = str(int(time.time() * 1000))
+
+            # Determine download directory
+            download_dir = self.app_controller.settings_manager.get_setting(
+                "download_directory"
+            )
+            if not download_dir:
+                download_dir = os.path.expanduser("~/Downloads")
+            os.makedirs(download_dir, exist_ok=True)
+
+            if path is None:
+                filename = os.path.basename(QUrl(url).fileName()) or "download"
+                path = os.path.join(download_dir, filename)
+
+            # Ensure unique filename
+            base, ext = os.path.splitext(os.path.basename(path))
+            unique_path = path
+            i = 1
+            while os.path.exists(unique_path):
+                unique_path = os.path.join(download_dir, f"{base} ({i}){ext}")
+                i += 1
+            path = unique_path
+
+            def run():
+                received = 0
+                total = 0
+                try:
+                    response = requests.get(url, stream=True)
+                    total = int(response.headers.get("content-length", 0))
+
+                    self._add_download_to_db(
+                        download_id,
+                        url,
+                        path,
+                        os.path.basename(path),
+                        response.headers.get("content-type", ""),
+                        total,
+                        0,
+                        "in_progress",
+                        int(time.time()),
+                        0,
+                        "",
+                    )
+
+                    self.active_downloads[download_id] = threading.current_thread()
+
+                    self.download_started.emit(download_id, url, path)
+                    self.app_controller.hook_registry.trigger_hook(
+                        "onDownloadStart", download_id, url, path
+                    )
+
+                    with open(path, "wb") as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                                received += len(chunk)
+                                self._update_download_in_db(
+                                    download_id, received=received, size=total
+                                )
+                                self.download_progress.emit(download_id, received, total)
+                                self.app_controller.hook_registry.trigger_hook(
+                                    "onDownloadProgress", download_id, received, total
+                                )
+
+                    self._update_download_in_db(
+                        download_id,
+                        state="completed",
+                        end_time=int(time.time()),
+                        received=received,
+                        size=total,
+                    )
+                    if download_id in self.active_downloads:
+                        del self.active_downloads[download_id]
+
+                    self.download_finished.emit(download_id, True)
+                    self.app_controller.hook_registry.trigger_hook(
+                        "onDownloadComplete", download_id, path
+                    )
+                    self.app_controller.logger.info(f"Download finished: {path}")
+
+                except Exception as e:
+                    if download_id in self.active_downloads:
+                        del self.active_downloads[download_id]
+                    self._update_download_in_db(
+                        download_id,
+                        state="failed",
+                        end_time=int(time.time()),
+                        error=str(e),
+                    )
+                    self.download_failed.emit(download_id, str(e))
+                    self.app_controller.hook_registry.trigger_hook(
+                        "onDownloadError", download_id, str(e)
+                    )
+                    self.app_controller.logger.error(f"Error downloading {url}: {e}")
+
+            threading.Thread(target=run, daemon=True).start()
+            return download_id
+
+        except Exception as e:  # Catch setup errors
+            self.app_controller.logger.error(f"Error starting download: {e}")
             return None
     
     def _add_download_to_db(self, download_id, url, path, filename, mime_type, size, received, state, start_time, end_time, error):
@@ -257,7 +365,8 @@ class DownloadManager(QObject):
                 del self.active_downloads[download_id]
             
             # Emit signal
-            self.download_finished.emit(download_id, path)
+            success = download.state() == QWebEngineDownloadRequest.DownloadState.DownloadCompleted
+            self.download_finished.emit(download_id, success)
             
             # Trigger hook
             self.app_controller.hook_registry.trigger_hook("onDownloadComplete", download_id, path)
@@ -546,6 +655,10 @@ class DownloadManager(QObject):
         except Exception as e:
             self.app_controller.logger.error(f"Error clearing downloads: {e}")
             return False
+
+    def clear_completed_downloads(self):
+        """Convenience method to clear completed downloads."""
+        return self.clear_downloads(state="completed")
     
     def remove_download(self, download_id):
         """Remove a download from the database."""
