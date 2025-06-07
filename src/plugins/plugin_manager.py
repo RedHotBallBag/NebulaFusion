@@ -277,6 +277,16 @@ class PluginManager(QObject):
             )
             return False
 
+    def reload_all_plugins(self):
+        """Reload all currently loaded plugins."""
+        plugin_loader = self.app_controller.plugin_loader
+        plugin_ids = list(plugin_loader.loaded_plugins.keys())
+        success = True
+        for plugin_id in plugin_ids:
+            if not plugin_loader.reload_plugin(plugin_id):
+                success = False
+        return success
+
     def install_plugin(self, plugin_path):
         """Install a plugin from a file."""
         try:
