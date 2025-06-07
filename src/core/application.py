@@ -369,6 +369,8 @@ class SettingsManager(QObject):
         # Save settings to QSettings
         for key, value in self.default_settings.items():
             self.settings.setValue(key, value)
+        # Ensure the settings are written to disk
+        self.settings.sync()
 
     def get_setting(self, key, default=None):
         """Get a setting."""

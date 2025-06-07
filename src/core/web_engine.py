@@ -14,6 +14,13 @@ from PyQt6.QtWebEngineCore import (
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 
 
+class WebEngine(QWebEngineView):
+    """Simple web engine view wrapper used by tests."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+
 class WebEngineManager(QObject):
     """
     Manager for web engine functionality.
