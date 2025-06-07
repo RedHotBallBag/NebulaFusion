@@ -6,6 +6,7 @@ PyQt6-sip>=13.4.0
 
 # Additional Dependencies
 requests>=2.28.1         # For making HTTP requests
+playwright>=1.36         # For headless browser automation
 python-dotenv>=0.21.0    # For managing environment variables
 
 # Development Dependencies

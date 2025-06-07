@@ -12,6 +12,7 @@ from src.core.history import HistoryManager
 from src.core.bookmarks import BookmarksManager
 from src.core.cookies import CookiesManager
 from src.core.downloads import DownloadManager
+from src.utils.file_utils import FileUtils
 from src.core.security import SecurityManager
 from src.core.content_security import ContentSecurityManager
 
@@ -112,6 +113,9 @@ class Application(QObject):
         # Create download manager
         self.download_manager = DownloadManager(self)
 
+        # Create file utilities
+        self.file_utils = FileUtils()
+
         # Create security manager
         self.security_manager = SecurityManager(self)
 
@@ -176,9 +180,7 @@ class Application(QObject):
             try:
                 plugin["api"].ui.connect_main_window(self.main_window)
             except Exception as e:
-                self.logger.error(
-                    f"Error connecting plugin {plugin['id']} UI: {e}"
-                )
+                self.logger.error(f"Error connecting plugin {plugin['id']} UI: {e}")
 
         # Show main window
         if self.main_window:

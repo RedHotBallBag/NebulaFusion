@@ -252,6 +252,9 @@ The plugin API is provided to the plugin during initialization and gives access 
 - `cancel_download(download_id)`: Cancel download
 - `get_downloads()`: Get all downloads
 
+### Browser Automation API
+- `get_page_title(url)`: Fetch the title of a web page using a headless browser
+
 ### Settings API
 - `get_settings()`: Get plugin settings
 - `set_setting(key, value)`: Set plugin setting
