@@ -5,14 +5,10 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
     QVBoxLayout,
-    QTabWidget,
-    QToolBar,
     QLineEdit,
     QMessageBox,
 )
-from PyQt6.QtGui import QAction
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import QUrl, Qt
+from PyQt6.QtCore import QUrl
 
 # Import your dialogs
 from src.ui.plugin_dialog import PluginDialog
@@ -21,6 +17,7 @@ from src.ui.bookmarks_dialog import BookmarksDialog
 from src.ui.settings_dialog import SettingsDialog
 from src.ui.status_bar import StatusBar
 from src.ui.toolbar import Toolbar
+from src.ui.browser_tabs import BrowserTabs
 
 
 class MainWindow(QMainWindow):
@@ -46,12 +43,17 @@ class MainWindow(QMainWindow):
         self.address_bar.returnPressed.connect(self.navigate_to_address)
         self.layout.addWidget(self.address_bar)
 
-        # Tab widget
-        self.tab_widget = QTabWidget()
-        self.tab_widget.setTabsClosable(True)
-        self.tab_widget.tabCloseRequested.connect(self.close_tab)
-        self.tab_widget.currentChanged.connect(self.update_address_bar)
+        # Tab widget managed by TabManager
+        self.tab_widget = BrowserTabs(self.app_controller)
         self.layout.addWidget(self.tab_widget)
+
+        # Connect TabManager signals to keep UI in sync
+        tm = self.app_controller.tab_manager
+        tm.tab_created.connect(self.tab_widget.on_tab_created)
+        tm.tab_closed.connect(self.tab_widget.on_tab_closed)
+        tm.tab_selected.connect(self.tab_widget.on_tab_selected)
+        tm.tab_selected.connect(self.update_address_bar)
+        tm.tab_url_changed.connect(self._on_tab_url_changed)
 
         # Plugin / Manager dialogs
         self.plugin_manager_dialog = PluginDialog(self.app_controller)
@@ -64,34 +66,18 @@ class MainWindow(QMainWindow):
         self.status_bar = StatusBar(self.app_controller)
         self.setStatusBar(self.status_bar)
 
-        # Open initial tab
-        self.add_new_tab(QUrl("https://www.google.com"), "New Tab")
+        # Open initial tab using the tab manager so plugins work correctly
+        self.app_controller.tab_manager.new_tab("https://www.google.com")
 
         self.app_controller.logger.info(
             "Main window fully initialized with tabbed browsing and managers."
         )
 
     def add_new_tab(self, url, label="New Tab"):
-        browser = QWebEngineView()
-        browser.setUrl(url)
-
-        index = self.tab_widget.addTab(browser, label)
-        self.tab_widget.setCurrentIndex(index)
-
-        self.app_controller.hook_registry.trigger_hook("onTabCreated", tab=browser)
-
-        # Connect signals
-        browser.urlChanged.connect(
-            lambda qurl, browser=browser: self.update_url(qurl, browser)
-        )
-        browser.loadFinished.connect(
-            lambda _, browser=browser: self.update_tab_title(browser)
-        )
-
-        # Trigger plugin hook
-        self.app_controller.hook_registry.trigger_hook("onTabCreated")
-
-        self.app_controller.logger.info(f"New tab opened: {url.toString()}")
+        """Create a new tab using the tab manager."""
+        if isinstance(url, QUrl):
+            url = url.toString()
+        self.app_controller.tab_manager.new_tab(url)
 
     def handle_toolbar_action(self, action_id):
         """Handle toolbar button clicks."""
@@ -134,31 +120,19 @@ class MainWindow(QMainWindow):
     def update_address_bar(self, index):
         browser = self.current_browser()
         if browser:
-            url = browser.url().toString()
-            self.address_bar.setText(url)
+            self.address_bar.setText(browser.url().toString())
 
-    def update_url(self, qurl, browser):
-        if browser == self.current_browser():
-            self.address_bar.setText(qurl.toString())
 
-    def update_tab_title(self, browser):
-        index = self.tab_widget.indexOf(browser)
-        if index != -1:
-            self.tab_widget.setTabText(index, browser.title())
+
 
     def current_browser(self):
-        return self.tab_widget.currentWidget()
+        return self.app_controller.tab_manager.get_current_tab()
 
     def close_tab(self, index):
         if self.tab_widget.count() < 2:
             QMessageBox.warning(self, "Warning", "Cannot close the last tab.")
             return
-        self.tab_widget.removeTab(index)
-        self.app_controller.logger.info(f"Tab closed: {index}")
-        self.app_controller.hook_registry.trigger_hook("onTabClosed")
-
-        # Trigger plugin hook
-        self.app_controller.hook_registry.trigger_hook("onTabClosed")
+        self.app_controller.tab_manager.close_tab(index)
 
     def go_back(self):
         browser = self.current_browser()
@@ -174,6 +148,11 @@ class MainWindow(QMainWindow):
         browser = self.current_browser()
         if browser:
             browser.reload()
+
+    def _on_tab_url_changed(self, index, url):
+        """Update address bar when the current tab URL changes."""
+        if index == self.app_controller.tab_manager.current_tab_index:
+            self.address_bar.setText(url.toString())
 
     # Dialog handlers
     def show_plugin_manager(self):
