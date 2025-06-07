@@ -364,9 +364,35 @@ class PluginLoader(QObject):
             
             # Define valid permissions
             valid_permissions = [
-                "tabs", "bookmarks", "history", "downloads", "cookies", "storage",
-                "webRequest", "notifications", "contextMenus", "clipboardRead", 
-                "clipboardWrite", "toolbar"  # Added toolbar permission
+                # Core browser access
+                "browser",
+                "tabs",
+                "bookmarks",
+                "history",
+                "navigation",
+                "content",
+                # UI and interaction
+                "ui",
+                "toolbar",
+                "notifications",
+                "contextMenus",
+                # Data and storage
+                "downloads",
+                "cookies",
+                "storage",
+                "clipboardRead",
+                "clipboardWrite",
+                "webRequest",
+                "settings",
+                # Unique NebulaFusion features
+                "reality_augmentation",
+                "collaborative",
+                "content_transform",
+                "time_travel",
+                "dimensional_tabs",
+                "voice_commands",
+                # Special value granting all permissions
+                "all",
             ]
             
             for permission in manifest["permissions"]:
