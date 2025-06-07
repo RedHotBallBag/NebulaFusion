@@ -5,7 +5,7 @@ import os
 import sys
 from PyQt6.QtCore import QObject, pyqtSignal, QUrl
 from PyQt6.QtWebEngineCore import QWebEnginePage
-from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 
 class TabManager(QObject):
     """
@@ -321,19 +321,32 @@ class TabManager(QObject):
         if key == "enable_javascript":
             # Update JavaScript setting for all tabs
             for tab in self.tabs:
-                tab.page().settings().setAttribute(QWebEnginePage.WebAttribute.JavascriptEnabled, value)
+                tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, value)
         
         elif key == "enable_plugins":
             # Update plugins setting for all tabs
             for tab in self.tabs:
-                tab.page().settings().setAttribute(QWebEnginePage.WebAttribute.PluginsEnabled, value)
+                tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, value)
         
         elif key == "security_enable_xss_protection":
             # Update XSS protection setting for all tabs
             for tab in self.tabs:
-                tab.page().settings().setAttribute(QWebEnginePage.WebAttribute.XSSAuditingEnabled, value)
+                tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.XSSAuditingEnabled, value)
         
         elif key == "enable_developer_tools":
-            # Update developer tools setting for all tabs
-            for tab in self.tabs:
-                tab.page().settings().setAttribute(QWebEnginePage.WebAttribute.DeveloperExtrasEnabled, value)
+            # Update developer tools setting for all tabs. Some Qt builds may
+            # lack the DeveloperExtrasEnabled attribute, so guard against that
+            # to avoid AttributeError crashes when toggling the setting.
+            attr = getattr(
+                QWebEngineSettings.WebAttribute, "DeveloperExtrasEnabled", None
+            )
+            if attr is not None:
+                for tab in self.tabs:
+                    try:
+                        tab.page().settings().setAttribute(attr, value)
+                    except AttributeError:
+                        # Guard against Qt builds that expose the enum value but
+                        # not the underlying feature.
+                        self.app_controller.logger.warning(
+                            "Developer tools setting not supported"
+                        )
