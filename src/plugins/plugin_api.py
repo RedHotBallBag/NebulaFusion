@@ -518,11 +518,34 @@ class PluginUI:
         self._menu_items = {}
         self._context_menu_items = {}
 
-        # Connect to toolbar creation signal if available
+        # Plugin toolbar reference
+        self.plugin_toolbar = None
+
+        # Connect to plugin toolbar creation signal if available
         if hasattr(app_controller, "main_window") and hasattr(
-            app_controller.main_window, "toolbar_created"
+            app_controller.main_window, "plugin_toolbar_created"
         ):
-            app_controller.main_window.toolbar_created.connect(self._on_toolbar_created)
+            app_controller.main_window.plugin_toolbar_created.connect(
+                self._on_plugin_toolbar_created
+            )
+
+    def connect_main_window(self, main_window):
+        """Connect to a newly created main window."""
+        try:
+            if hasattr(main_window, "plugin_toolbar_created"):
+                main_window.plugin_toolbar_created.connect(
+                    self._on_plugin_toolbar_created
+                )
+            if hasattr(main_window, "plugin_toolbar"):
+                self._on_plugin_toolbar_created(main_window.plugin_toolbar)
+        except Exception as e:
+            self.logger.error(f"Error connecting to main window: {e}")
+
+
+    def _on_plugin_toolbar_created(self, toolbar):
+        """Handle plugin toolbar creation event."""
+        self.plugin_toolbar = toolbar
+        self.logger.info("Plugin toolbar created, processing queued buttons")
 
     def connect_main_window(self, main_window):
         """Connect to a newly created main window."""
@@ -537,13 +560,13 @@ class PluginUI:
     def _on_toolbar_created(self, toolbar):
         """Handle toolbar creation event."""
         self.logger.info("Toolbar created, processing queued buttons")
+
         if hasattr(self, "_queued_buttons"):
             queued_buttons = getattr(self, "_queued_buttons", {})
             for button_id, button_info in list(queued_buttons.items()):
                 try:
                     self.logger.info(f"Processing queued button: {button_id}")
                     self.add_toolbar_button(button_id=button_id, **button_info)
-                    # Remove from queue if successfully added
                     if button_id in self._queued_buttons:
                         del self._queued_buttons[button_id]
                 except Exception as e:
@@ -551,14 +574,13 @@ class PluginUI:
                         f"Error processing queued button {button_id}: {str(e)}",
                         exc_info=True,
                     )
-            # Clear the queue after processing
             self._queued_buttons.clear()
 
     def add_toolbar_button(
         self, button_id, text, icon=None, tooltip=None, callback=None, position=None
     ):
         """
-        Add a button to the main toolbar.
+        Add a button to the plugin toolbar.
 
         Args:
             button_id (str): Unique identifier for the button
@@ -579,7 +601,7 @@ class PluginUI:
                 self.logger.warning(f"Button with ID {button_id} already exists")
                 return False
 
-            # Get the main window and toolbar
+            # Get the plugin toolbar
             main_window = getattr(self.app_controller, "main_window", None)
             if not main_window:
                 self.logger.error("Main window not available")
@@ -595,12 +617,11 @@ class PluginUI:
                 }
                 return True
 
-            toolbar = getattr(main_window, "toolbar", None)
+            toolbar = getattr(main_window, "plugin_toolbar", None)
             if not toolbar:
                 self.logger.warning(
-                    "Toolbar not available, will add button when toolbar is created"
+                    "Plugin toolbar not available, will add button when created"
                 )
-                # Queue the button creation for when the toolbar is available
                 if not hasattr(self, "_queued_buttons"):
                     self._queued_buttons = {}
                 self._queued_buttons[button_id] = {
@@ -640,8 +661,11 @@ class PluginUI:
                     lambda checked, cb=callback: self._safe_callback(cb)
                 )
 
-            # Add action to toolbar using the add_plugin_button method
-            toolbar.add_plugin_button(action)
+            # Add action to plugin toolbar
+            if hasattr(toolbar, "add_plugin_button"):
+                toolbar.add_plugin_button(action)
+            else:
+                toolbar.addAction(action)
 
             # Store reference to the action
             self._toolbar_buttons[button_id] = action

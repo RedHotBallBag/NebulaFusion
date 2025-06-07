@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
     QMessageBox,
+    QToolBar,
 )
-
 from PyQt6.QtCore import QUrl, pyqtSignal
 
 # Import your dialogs
@@ -23,8 +23,9 @@ from src.ui.browser_tabs import BrowserTabs
 
 class MainWindow(QMainWindow):
     """Main browser window."""
-
     toolbar_created = pyqtSignal(object)
+    plugin_toolbar_created = pyqtSignal(object)
+
 
     def __init__(self, app_controller):
         super().__init__()
@@ -42,8 +43,19 @@ class MainWindow(QMainWindow):
         self.toolbar = Toolbar(self.app_controller)
         self.toolbar.action_triggered.connect(self.handle_toolbar_action)
         self.addToolBar(self.toolbar)
+        # Navigation toolbar ready
+        self.toolbar_created.emit(self.toolbar)
+
+        # --- Plugin toolbar placed below navigation ---
+        self.addToolBarBreak()
+        self.plugin_toolbar = QToolBar("Plugins")
+        self.plugin_toolbar.setMovable(False)
+        self.addToolBar(self.plugin_toolbar)
+        self.plugin_toolbar_created.emit(self.plugin_toolbar)
+
         # Notify plugins that the toolbar is available
         self.toolbar_created.emit(self.toolbar)
+
 
         # Address bar
         self.address_bar = QLineEdit()
