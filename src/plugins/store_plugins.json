@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sample_plugin",
+    "name": "Sample Plugin",
+    "version": "1.0.0",
+    "author": "NebulaFusion Team",
+    "description": "A sample plugin that demonstrates adding a button to the toolbar.",
+    "url": "https://example.com/sample_plugin.zip"
+  }
+]

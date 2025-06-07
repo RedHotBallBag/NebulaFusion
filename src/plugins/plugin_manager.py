@@ -159,9 +159,19 @@ class PluginManager(QObject):
 
     def _load_store_plugins(self):
         """Load store plugins."""
-        # TODO: Implement loading store plugins from a remote source
-        # For now, we'll just use a hardcoded list
+        # Try to load available plugins from a local JSON file. This avoids the
+        # need for a network connection during testing while still providing
+        # predictable data for the UI and unit tests.
         self.store_plugins = []
+        store_file = os.path.join(os.path.dirname(__file__), "store_plugins.json")
+        if os.path.exists(store_file):
+            try:
+                with open(store_file, "r", encoding="utf-8") as f:
+                    self.store_plugins = json.load(f)
+            except Exception as e:
+                self.app_controller.logger.error(
+                    f"Failed to load store plugins: {e}", exc_info=True
+                )
 
     def get_plugin(self, plugin_id):
         """Get a plugin by ID."""
