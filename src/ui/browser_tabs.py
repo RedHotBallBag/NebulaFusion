@@ -39,9 +39,11 @@ class BrowserTab(QWebEngineView):
             # Use default profile
             self.profile = self.app_controller.web_engine_manager.get_default_profile()
 
-        # Create web page
-        self.page = QWebEnginePage(self.profile, self)
-        self.setPage(self.page)
+        # Create web page. Avoid storing it under the name "page" since
+        # QWebEngineView already provides a method with that name. Using a
+        # separate attribute prevents accidental shadowing and call errors.
+        self.web_page = QWebEnginePage(self.profile, self)
+        self.setPage(self.web_page)
 
         # Connect signals
         self._connect_signals()
@@ -137,7 +139,7 @@ class BrowserTab(QWebEngineView):
 
     def save_page(self, file_path):
         """Save page to file."""
-        self.page.save(file_path)
+        self.web_page.save(file_path)
 
     def print_page(self):
         """Print page."""
