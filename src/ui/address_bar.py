@@ -42,6 +42,11 @@ class AddressBar(QLineEdit):
         model = QStringListModel()
         model.setStringList(urls)
         self.completer.setModel(model)
+
+    def focusInEvent(self, event):
+        """Select all text when the widget gains focus."""
+        super().focusInEvent(event)
+        self.selectAll()
     
     def _on_return_pressed(self):
         """Handle return key press."""
