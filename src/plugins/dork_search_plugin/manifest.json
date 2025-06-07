@@ -1,0 +1,11 @@
+{
+    "id": "dork_search_plugin",
+    "name": "Dog House Panel",
+    "version": "0.2.0",
+    "author": "NebulaFusion Team",
+    "description": "Adds a side panel for building Google 'index of' dorks and opening the results in new tabs.",
+    "permissions": [
+        "tabs",
+        "ui"
+    ]
+}
