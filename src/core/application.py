@@ -156,6 +156,11 @@ class Application(QObject):
         self.plugin_loader.initialize()
         self.plugin_manager.initialize()
 
+        # Load and enable plugins before creating the UI so hooks like
+        # onToolbarCreated and onBrowserStart fire correctly during startup.
+        self.logger.info("Loading and enabling plugins...")
+        self._initialize_plugins()
+
         # Initialize theme manager
         self.logger.info("Initializing theme manager...")
         self.theme_manager.initialize()
@@ -172,13 +177,9 @@ class Application(QObject):
             self.logger.error("Main window could not be created.")
             return False
 
-        # Trigger browser start hook
+        # Trigger browser start hook after plugins are enabled
         self.logger.info("Triggering browser start hook...")
         self.hook_registry.trigger_hook("onBrowserStart")
-
-        # Load and enable plugins
-        self.logger.info("Loading and enabling plugins...")
-        self._initialize_plugins()
 
         # Update state
         self._is_initialized_flag = True
