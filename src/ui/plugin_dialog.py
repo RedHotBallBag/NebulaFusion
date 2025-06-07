@@ -265,8 +265,11 @@ Available Hooks:
 - onPageLoading: Called when a page starts loading
 - onPageLoaded: Called when a page finishes loading
 - onUrlChanged: Called when URL changes
-- onDownloadStarted: Called when a download starts
-- onDownloadFinished: Called when a download finishes
+- onDownloadStart: Called when a download starts
+- onDownloadProgress: Called during download progress
+- onDownloadComplete: Called when a download completes
+- onDownloadError: Called when a download fails
+- onDownloadCanceled: Called when a download is canceled
 - onBookmarkAdded: Called when a bookmark is added
 - onBookmarkRemoved: Called when a bookmark is removed
 - onHistoryAdded: Called when a history entry is added
