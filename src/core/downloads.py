@@ -168,7 +168,7 @@ class DownloadManager(QObject):
             self.download_started.emit(download_id, url)
             
             # Trigger hook
-            self.app_controller.hook_registry.trigger_hook("onDownloadStarted", download_id, url, download_path)
+            self.app_controller.hook_registry.trigger_hook("onDownloadStart", download_id, url, download_path)
             
             self.app_controller.logger.info(f"Download started: {url} to {download_path}")
             
@@ -260,7 +260,7 @@ class DownloadManager(QObject):
             self.download_finished.emit(download_id, path)
             
             # Trigger hook
-            self.app_controller.hook_registry.trigger_hook("onDownloadFinished", download_id, path)
+            self.app_controller.hook_registry.trigger_hook("onDownloadComplete", download_id, path)
             
             self.app_controller.logger.info(f"Download finished: {path}")
         
@@ -337,7 +337,7 @@ class DownloadManager(QObject):
                 self.download_failed.emit(download_id, error)
                 
                 # Trigger hook
-                self.app_controller.hook_registry.trigger_hook("onDownloadFailed", download_id, error)
+                self.app_controller.hook_registry.trigger_hook("onDownloadError", download_id, error)
                 
                 self.app_controller.logger.info(f"Download failed: {download_id} - {error}")
         
