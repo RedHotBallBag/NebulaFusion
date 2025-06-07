@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
 # NebulaFusion Browser - History Dialog
 
-import os
-import sys
-from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-                            QPushButton, QLineEdit, QLabel, QMenu, QMessageBox, QHeaderView,
-                            QDateEdit, QComboBox)
-from PyQt6.QtCore import Qt, pyqtSignal, QSize, QDate, QDateTime
-from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QHeaderView,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
+from PyQt6.QtCore import Qt, QDate, QDateTime
+from PyQt6.QtGui import QAction
 
 class HistoryDialog(QDialog):
     """
@@ -119,18 +130,20 @@ class HistoryDialog(QDialog):
             self.history_table.insertRow(i)
             
             # Title
-            title_item = QTableWidgetItem(item["title"])
-            title_item.setData(Qt.ItemDataRole.UserRole, item["id"])
+            title_item = QTableWidgetItem(item.get("title", ""))
+            if "id" in item:
+                title_item.setData(Qt.ItemDataRole.UserRole, item["id"])
             self.history_table.setItem(i, 0, title_item)
             
             # URL
-            url_item = QTableWidgetItem(item["url"])
+            url_item = QTableWidgetItem(item.get("url", ""))
             self.history_table.setItem(i, 1, url_item)
             
             # Date
-            date = QDateTime.fromSecsSinceEpoch(item["timestamp"]).toString("yyyy-MM-dd hh:mm:ss")
+            timestamp = item.get("timestamp", 0)
+            date = QDateTime.fromSecsSinceEpoch(timestamp).toString("yyyy-MM-dd hh:mm:ss")
             date_item = QTableWidgetItem(date)
-            date_item.setData(Qt.ItemDataRole.UserRole, item["timestamp"])
+            date_item.setData(Qt.ItemDataRole.UserRole, timestamp)
             self.history_table.setItem(i, 2, date_item)
     
     def _filter_history(self):

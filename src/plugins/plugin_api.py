@@ -2,7 +2,6 @@
 # NebulaFusion Browser - Plugin API
 
 import os
-import sys
 from PyQt6.QtCore import QObject
 
 
@@ -525,6 +524,16 @@ class PluginUI:
         ):
             app_controller.main_window.toolbar_created.connect(self._on_toolbar_created)
 
+    def connect_main_window(self, main_window):
+        """Connect to a newly created main window."""
+        try:
+            if hasattr(main_window, "toolbar_created"):
+                main_window.toolbar_created.connect(self._on_toolbar_created)
+            if hasattr(main_window, "toolbar"):
+                self._on_toolbar_created(main_window.toolbar)
+        except Exception as e:
+            self.logger.error(f"Error connecting to main window: {e}")
+
     def _on_toolbar_created(self, toolbar):
         """Handle toolbar creation event."""
         self.logger.info("Toolbar created, processing queued buttons")
@@ -605,7 +614,6 @@ class PluginUI:
 
             # Create the action
             from PyQt6.QtGui import QIcon, QAction
-            from PyQt6.QtCore import Qt
 
             action = QAction(text, self.app_controller.main_window)
             action.setObjectName(f"{self.plugin_id}_{button_id}")
