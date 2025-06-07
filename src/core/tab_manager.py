@@ -334,7 +334,6 @@ class TabManager(QObject):
                 tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.XSSAuditingEnabled, value)
         
         elif key == "enable_developer_tools":
-
             # Update developer tools setting for all tabs. Some Qt builds may
             # lack the DeveloperExtrasEnabled attribute, so guard against that
             # to avoid AttributeError crashes when toggling the setting.
@@ -348,5 +347,3 @@ class TabManager(QObject):
             # Update developer tools setting for all tabs
             for tab in self.tabs:
                 tab.page().settings().setAttribute(QWebEngineSettings.WebAttribute.DeveloperExtrasEnabled, value)
-
-
