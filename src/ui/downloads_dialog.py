@@ -85,6 +85,8 @@ class DownloadsDialog(QDialog):
         self.app_controller.download_manager.download_started.connect(self._on_download_started)
         self.app_controller.download_manager.download_progress.connect(self._on_download_progress)
         self.app_controller.download_manager.download_finished.connect(self._on_download_finished)
+        self.app_controller.download_manager.download_failed.connect(self._on_download_failed)
+        self.app_controller.download_manager.download_canceled.connect(self._on_download_canceled)
     
     def _load_downloads(self):
         """Load downloads from download manager."""
@@ -110,13 +112,25 @@ class DownloadsDialog(QDialog):
         self.downloads_table.setItem(row, 0, name_item)
         
         # Status
-        status_item = QTableWidgetItem(download["status"])
+        state = download["state"]
+        status_map = {
+            "in_progress": "In Progress",
+            "completed": "Completed",
+            "failed": "Failed",
+            "canceled": "Canceled",
+            "paused": "Paused",
+        }
+        status_item = QTableWidgetItem(status_map.get(state, state))
         self.downloads_table.setItem(row, 1, status_item)
-        
+
         # Progress
         progress_bar = QProgressBar()
         progress_bar.setRange(0, 100)
-        progress_bar.setValue(download["progress"])
+        if download["size"] > 0:
+            percent = int(download["received"] * 100 / download["size"])
+            progress_bar.setValue(min(percent, 100))
+        else:
+            progress_bar.setValue(0)
         self.downloads_table.setCellWidget(row, 2, progress_bar)
         
         # Size
@@ -194,6 +208,21 @@ class DownloadsDialog(QDialog):
             if progress_bar:
                 progress_bar.setRange(0, 100)
                 progress_bar.setValue(100 if success else 0)
+
+    def _on_download_failed(self, download_id, error):
+        """Handle download failed event."""
+        self._on_download_finished(download_id, False)
+
+    def _on_download_canceled(self, download_id):
+        """Handle download canceled event."""
+        row = self._find_download_row(download_id)
+        if row >= 0:
+            status_item = self.downloads_table.item(row, 1)
+            if status_item:
+                status_item.setText("Canceled")
+            progress_bar = self.downloads_table.cellWidget(row, 2)
+            if progress_bar:
+                progress_bar.setValue(0)
     
     def _on_context_menu(self, pos):
         """Handle context menu event."""
@@ -267,7 +296,7 @@ class DownloadsDialog(QDialog):
         
         # Get download
         download = self.app_controller.download_manager.get_download(download_id)
-        if download and download["status"] == "Completed":
+        if download and download["state"] == "completed":
             # Open file
             self.app_controller.file_utils.open_file(download["path"])
     
