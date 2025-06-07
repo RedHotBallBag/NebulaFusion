@@ -541,10 +541,26 @@ class PluginUI:
         except Exception as e:
             self.logger.error(f"Error connecting to main window: {e}")
 
+
     def _on_plugin_toolbar_created(self, toolbar):
         """Handle plugin toolbar creation event."""
         self.plugin_toolbar = toolbar
         self.logger.info("Plugin toolbar created, processing queued buttons")
+
+    def connect_main_window(self, main_window):
+        """Connect to a newly created main window."""
+        try:
+            if hasattr(main_window, "toolbar_created"):
+                main_window.toolbar_created.connect(self._on_toolbar_created)
+            if hasattr(main_window, "toolbar"):
+                self._on_toolbar_created(main_window.toolbar)
+        except Exception as e:
+            self.logger.error(f"Error connecting to main window: {e}")
+
+    def _on_toolbar_created(self, toolbar):
+        """Handle toolbar creation event."""
+        self.logger.info("Toolbar created, processing queued buttons")
+
         if hasattr(self, "_queued_buttons"):
             queued_buttons = getattr(self, "_queued_buttons", {})
             for button_id, button_info in list(queued_buttons.items()):

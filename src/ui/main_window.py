@@ -23,9 +23,9 @@ from src.ui.browser_tabs import BrowserTabs
 
 class MainWindow(QMainWindow):
     """Main browser window."""
-
     toolbar_created = pyqtSignal(object)
     plugin_toolbar_created = pyqtSignal(object)
+
 
     def __init__(self, app_controller):
         super().__init__()
@@ -52,6 +52,10 @@ class MainWindow(QMainWindow):
         self.plugin_toolbar.setMovable(False)
         self.addToolBar(self.plugin_toolbar)
         self.plugin_toolbar_created.emit(self.plugin_toolbar)
+
+        # Notify plugins that the toolbar is available
+        self.toolbar_created.emit(self.toolbar)
+
 
         # Address bar
         self.address_bar = QLineEdit()
